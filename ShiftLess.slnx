@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="ShiftLess.Application/ShiftLess.Application.csproj" />
+  <Project Path="ShiftLess.Domain/ShiftLess.Domain.csproj" />
+  <Project Path="ShiftLess.Infrastructure/ShiftLess.Infrastructure.csproj" />
+  <Project Path="ShiftLess.Persistence/ShiftLess.Persistence.csproj" />
+  <Project Path="ShiftLess/ShiftLessAPI.csproj" />
+</Solution>
