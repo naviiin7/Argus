@@ -1,25 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using ShiftLess.Domain.Enums;
 
-namespace ShiftLess.Domain.Entities
+namespace ShiftLess.Domain.Entities;
+
+
+
+public class TaskRequest
+
+
+
 {
-    public class TaskRequest
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        public int ManagerId { get; set; }
+    public int ShopkeeperId { get; set; }
 
-        public string Title { get; set; } = string.Empty;
+    public User Shopkeeper { get; set; } = null!;
 
-        public string Description { get; set; } = string.Empty;
+    public DateTime Created { get; set; } = DateTime.UtcNow;
 
-        public decimal Budget { get; set; }
+    public string Title { get; set; } = string.Empty;
 
-        public int RequiredClients { get; set; }
+    public string Description { get; set; } = string.Empty;
 
-        public DateTime Deadline { get; set; }
+    public decimal Budget { get; set; }
 
-        public TaskStatus Status { get; set; }
-    }
+    public int RequiredWorkers { get; set; }
+
+    public DateTime Deadline { get; set; }
+
+    public ShiftLess.Domain.Enums.TaskStatus Status { get; set; }
 }
