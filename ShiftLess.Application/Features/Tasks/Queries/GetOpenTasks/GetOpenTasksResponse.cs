@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ShiftLess.Application.Features.Tasks.DTOs;
+namespace ShiftLess.Application.Features.Tasks.Queries.GetOpenTasks;
 
-public class CreateTaskRequest
+public class GetOpenTasksResponse
 {
+    public int Id { get; set; }
+
     public string Title { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
@@ -15,6 +17,4 @@ public class CreateTaskRequest
     public int RequiredWorkers { get; set; }
 
     public DateTime Deadline { get; set; }
-
-    public int LeaveNoticeHours { get; set; } = 24;
 }

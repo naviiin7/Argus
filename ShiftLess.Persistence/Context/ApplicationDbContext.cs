@@ -23,6 +23,18 @@ public class ApplicationDbContext : DbContext
             .HasIndex(x => x.Email)
             .IsUnique();
 
+        modelBuilder.Entity<TaskApplication>()
+    .HasOne(x => x.TaskRequest)
+            .WithMany()
+            .HasForeignKey(x => x.TaskRequestId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<TaskApplication>()
+            .HasOne(x => x.Worker)
+            .WithMany()
+            .HasForeignKey(x => x.WorkerId)
+            .OnDelete(DeleteBehavior.NoAction);
+
 
     }
 

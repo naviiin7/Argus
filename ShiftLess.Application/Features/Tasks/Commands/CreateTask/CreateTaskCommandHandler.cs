@@ -2,7 +2,7 @@
 using ShiftLess.Application.Features.Tasks.Responses;
 using ShiftLess.Application.Interfaces;
 using ShiftLess.Domain.Entities;
-using ShiftLess.Domain.Enums;
+using ShiftLess.Application.Features.Tasks.DTOs;
 
 namespace ShiftLess.Application.Features.Tasks.Commands.CreateTask;
 
@@ -29,7 +29,8 @@ public class CreateTaskCommandHandler
             Budget = request.Request.Budget,
             RequiredWorkers = request.Request.RequiredWorkers,
             Deadline = request.Request.Deadline,
-            Status = ShiftLess.Domain.Enums.TaskStatus.Open
+            Status = ShiftLess.Domain.Enums.TaskStatus.Open,
+            MinimumLeaveNoticeHours = request.Request.LeaveNoticeHours
         };
 
         await _taskRepository.AddAsync(task);

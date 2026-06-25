@@ -15,47 +15,34 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Controllers
-        builder.Services.AddControllers();
+        // =========================================
+        // CORE FRAMEWORK SERVICES
+        // =========================================
 
-        // Swagger
+        builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
 
-        builder.Services.AddSwaggerGen(options =>
+        // =========================================
+        // APPLICATION LAYER
+        // =========================================
+
+        builder.Services.AddMediatR(cfg =>
         {
-            options.SwaggerDoc("v1", new OpenApiInfo
-            {
-                Title = "ShiftLess API",
-                Version = "v1"
-            });
-
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Name = "Authorization",
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header,
-                Description = "Enter: Bearer {your JWT token}"
-            });
-
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
-            });
+            cfg.RegisterServicesFromAssembly(
+                typeof(ApplicationAssemblyMarker).Assembly);
         });
 
-        // JWT Authentication
+        // =========================================
+        // INFRASTRUCTURE + PERSISTENCE
+        // =========================================
+
+        builder.Services.AddInfrastructure(builder.Configuration);
+        builder.Services.AddPersistence(builder.Configuration);
+
+        // =========================================
+        // AUTHENTICATION
+        // =========================================
+
         var jwtKey = builder.Configuration["Jwt:Key"];
 
         builder.Services
@@ -70,8 +57,11 @@ public class Program
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
 
-                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        ValidIssuer =
+                            builder.Configuration["Jwt:Issuer"],
+
+                        ValidAudience =
+                            builder.Configuration["Jwt:Audience"],
 
                         IssuerSigningKey =
                             new SymmetricSecurityKey(
@@ -79,20 +69,60 @@ public class Program
                     };
             });
 
-        // MediatR
-        builder.Services.AddMediatR(cfg =>
+        // =========================================
+        // SWAGGER
+        // =========================================
+
+        builder.Services.AddSwaggerGen(options =>
         {
-            cfg.RegisterServicesFromAssembly(
-                typeof(ApplicationAssemblyMarker).Assembly);
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "ShiftLess API",
+                Version = "v1"
+            });
+
+            options.AddSecurityDefinition(
+                "Bearer",
+                new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description =
+                        "Enter: Bearer {your JWT token}"
+                });
+
+            options.AddSecurityRequirement(
+                new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference =
+                                new OpenApiReference
+                                {
+                                    Type =
+                                        ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
         });
 
-        // Infrastructure + Persistence
-        builder.Services.AddInfrastructure(builder.Configuration);
-        builder.Services.AddPersistence(builder.Configuration);
+        // =========================================
+        // BUILD APP
+        // =========================================
 
         var app = builder.Build();
 
-        // Swagger UI
+        // =========================================
+        // MIDDLEWARE PIPELINE
+        // =========================================
+
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();

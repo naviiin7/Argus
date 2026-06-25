@@ -11,10 +11,15 @@ namespace ShiftLess.Domain.Entities
 
         public int TaskRequestId { get; set; }
 
-        public int ClientId { get; set; }
+        public TaskRequest TaskRequest { get; set; } = null!;
+
+        public int WorkerId { get; set; }
+
+        public User Worker { get; set; } = null!;
+
+        public DateTime AppliedAt { get; set; }
 
         public ApplicationStatus Status { get; set; }
 
-        public DateTime AppliedAt { get; set; }
     }
 }
