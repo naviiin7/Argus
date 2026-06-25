@@ -30,5 +30,7 @@ public interface ITaskRepository
 
     Task<List<TaskApplication>> GetApplicationsByTaskIdAsync(int taskId);
 
+    Task<TaskApplication?> GetAcceptedApplicationAsync(int taskId, int workerId);
+
 
 }

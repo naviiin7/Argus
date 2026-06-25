@@ -29,5 +29,7 @@ public class TaskRequest
 
     public int MinimumLeaveNoticeHours { get; set; } = 24;
 
+    public DateTime ApplicationDeadline { get; set; }
+
     public ShiftLess.Domain.Enums.TaskStatus Status { get; set; }
 }

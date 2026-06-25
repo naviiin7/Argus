@@ -33,6 +33,9 @@ public class ApplyTaskCommandHandler
                 request.TaskId,
                 request.WorkerId);
 
+        if (DateTime.UtcNow > task.ApplicationDeadline)
+            throw new Exception("Applications are closed.");
+
         if (existingApplication is not null)
         {
             if (existingApplication.Status != ApplicationStatus.Rejected)
@@ -72,6 +75,7 @@ public class ApplyTaskCommandHandler
         {
             ApplicationId = application.Id,
             Message = "Application submitted successfully"
+
         };
     }
 }

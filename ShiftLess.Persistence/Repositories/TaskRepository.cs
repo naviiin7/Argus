@@ -104,6 +104,19 @@ public class TaskRepository : ITaskRepository
             .ToListAsync();
     }
 
+    public async Task<TaskApplication?> GetAcceptedApplicationAsync(
+    int taskId,
+    int workerId)
+    {
+        return await _context.TaskApplications
+            .Include(x => x.TaskRequest)
+            .FirstOrDefaultAsync(x =>
+                x.TaskRequestId == taskId &&
+                x.WorkerId == workerId &&
+                x.Status == ApplicationStatus.Accepted);
+    }
+
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
