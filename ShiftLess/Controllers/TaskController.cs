@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShiftLess.Application.Features.Tasks.Commands.AcceptApplication;
 using ShiftLess.Application.Features.Tasks.Commands.ApplyTask;
+using ShiftLess.Application.Features.Tasks.Commands.CompleteTask;
 using ShiftLess.Application.Features.Tasks.Commands.CreateTask;
+using ShiftLess.Application.Features.Tasks.Commands.DeleteTask; 
+using ShiftLess.Application.Features.Tasks.Commands.LeaveTask;
 using ShiftLess.Application.Features.Tasks.Commands.RejectApplication;
 using ShiftLess.Application.Features.Tasks.DTOs;
 using ShiftLess.Application.Features.Tasks.Queries.GetApplicants;
@@ -11,7 +14,6 @@ using ShiftLess.Application.Features.Tasks.Queries.GetMyCreatedTasks;
 using ShiftLess.Application.Features.Tasks.Queries.GetMyTasks;
 using ShiftLess.Application.Features.Tasks.Queries.GetOpenTasks;
 using ShiftLess.Application.Features.Tasks.Queries.GetTaskDetails;
-using ShiftLess.Application.Features.Tasks.Commands.UpdateTask;
 using System.Security.Claims;
 
 namespace ShiftLessAPI.Controllers;
@@ -210,16 +212,53 @@ public class TasksController : ControllerBase
 
         return Ok(result);
     }
+
+    [Authorize(Roles = "Client,Manager")]
+    [HttpPost("{taskId}/leave")]
+    public async Task<IActionResult> LeaveTask(int taskId)
+    {
+        var workerId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var result = await _mediator.Send(
+            new LeaveTaskCommand(taskId, workerId));
+
+        return Ok(result);
+    }
+
+    [Authorize(Roles = "Manager,Admin")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteTask(int id)
+    {
+        var managerId = int.Parse(
+            User.FindFirstValue(
+                ClaimTypes.NameIdentifier)!);
+
+        var result =
+            await _mediator.Send(
+                new DeleteTaskCommand(id, managerId));
+
+        return Ok(result);
+    }
+
+    [Authorize(Roles = "Manager,Admin")]
+    [HttpPost("{id}/complete")]
+    public async Task<IActionResult> CompleteTask(int id)
+    {
+        var managerId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var result = await _mediator.Send(
+            new CompleteTaskCommand(id, managerId));
+
+        return Ok(result);
+    }
+
     // =====================================================
     // FUTURE ENDPOINTS
     // =====================================================
 
-    // GET    /api/tasks/{id}
-    // PUT    /api/tasks/{id}
-    // DELETE /api/tasks/{id}
 
-    // POST   /api/tasks/{taskId}/complete
-    // POST   /api/tasks/{taskId}/leave
 
     // SignalR Chat
     // GET    /api/tasks/{taskId}/chat

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ShiftLess.Application.Features.Tasks.DTOs;
 
@@ -14,7 +12,7 @@ public class CreateTaskRequest
 
     public int RequiredWorkers { get; set; }
 
-    public DateTime Deadline { get; set; }
+    public DateTime StartTime { get; set; }
 
     public int LeaveNoticeHours { get; set; } = 24;
 }

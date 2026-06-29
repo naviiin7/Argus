@@ -36,7 +36,7 @@ public class GetTaskDetailsQueryHandler
             Description = task.Description,
             Budget = task.Budget,
             RequiredWorkers = task.RequiredWorkers,
-            Deadline = task.Deadline,
+            Deadline = task.StartTime,
             Status = task.Status.ToString(),
 
             Applicants = applications.Select(a => new ApplicantDto

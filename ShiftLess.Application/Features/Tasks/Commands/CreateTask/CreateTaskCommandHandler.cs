@@ -28,9 +28,12 @@ public class CreateTaskCommandHandler
             Description = request.Request.Description,
             Budget = request.Request.Budget,
             RequiredWorkers = request.Request.RequiredWorkers,
-            Deadline = request.Request.Deadline,
-            Status = ShiftLess.Domain.Enums.TaskStatus.Open,
-            MinimumLeaveNoticeHours = request.Request.LeaveNoticeHours
+
+            StartTime = request.Request.StartTime,
+
+            LeaveNoticeHours = request.Request.LeaveNoticeHours,
+
+            Status = ShiftLess.Domain.Enums.TaskStatus.Open
         };
 
         await _taskRepository.AddAsync(task);

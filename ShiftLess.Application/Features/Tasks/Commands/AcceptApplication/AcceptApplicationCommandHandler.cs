@@ -21,20 +21,15 @@ public class AcceptApplicationCommandHandler
         AcceptApplicationCommand request,
         CancellationToken cancellationToken)
     {
-
         var task =
-    await _taskRepository.GetByIdAsync(
-        request.TaskId);
+            await _taskRepository.GetByIdAsync(request.TaskId);
 
         if (task is null)
             throw new Exception("Task not found");
 
         if (task.ShopkeeperId != request.ShopkeeperId)
-        {
             throw new UnauthorizedAccessException(
                 "You do not own this task.");
-        }
-
 
         var application =
             await _taskRepository.GetApplicationByIdAsync(
@@ -46,14 +41,36 @@ public class AcceptApplicationCommandHandler
         if (application.TaskRequestId != request.TaskId)
             throw new Exception("Invalid task");
 
-        application.Status =
-            ApplicationStatus.Accepted;
+        // Already accepted?
+        if (application.Status == ApplicationStatus.Accepted)
+            throw new Exception("Application is already accepted.");
+
+        // Check available slots
+        var acceptedCount =
+            await _taskRepository.GetAcceptedWorkerCountAsync(task.Id);
+
+        if (acceptedCount >= task.RequiredWorkers)
+            throw new Exception("This task is already full.");
+
+        // Accept worker
+        application.Status = ApplicationStatus.Accepted;
+
+        acceptedCount++;
+
+        // If task is now full, mark it Assigned
+        if (acceptedCount == task.RequiredWorkers)
+        {
+            task.Status = Domain.Enums.TaskStatus.Full;
+        }
+
+        if (DateTime.UtcNow >= task.StartTime)
+            throw new Exception("This task has already started.");
 
         await _taskRepository.SaveChangesAsync();
 
         return new AcceptApplicationResponse
         {
-            Message = "Application accepted successfully"
+            Message = "Application accepted successfully."
         };
     }
 }

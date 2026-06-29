@@ -28,7 +28,7 @@ public class GetOpenTasksQueryHandler
             Description = x.Description,
             Budget = x.Budget,
             RequiredWorkers = x.RequiredWorkers,
-            Deadline = x.Deadline
+            Deadline = x.StartTime
         }).ToList();
     }
 }

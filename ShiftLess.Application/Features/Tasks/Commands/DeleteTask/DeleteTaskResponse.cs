@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ShiftLess.Application.Features.Tasks.Commands.LeaveTask;
+namespace ShiftLess.Application.Features.Tasks.Commands.DeleteTask;
 
-public class LeaveTaskResponse
+public class DeleteTaskResponse
 {
     public string Message { get; set; } = string.Empty;
-
 }

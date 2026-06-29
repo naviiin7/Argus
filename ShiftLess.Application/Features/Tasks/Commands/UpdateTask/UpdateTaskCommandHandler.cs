@@ -41,8 +41,11 @@ public class UpdateTaskCommandHandler
         task.RequiredWorkers =
             request.Request.RequiredWorkers;
 
-        task.Deadline =
-            request.Request.Deadline;
+        task.StartTime =
+    request.Request.StartTime;
+
+        task.LeaveNoticeHours =
+            request.Request.LeaveNoticeHours;
 
         await _taskRepository
             .UpdateTaskAsync(task);

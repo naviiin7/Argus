@@ -30,7 +30,7 @@ public class GetMyCreatedTasksQueryHandler
                 TaskId = x.Id,
                 Title = x.Title,
                 RequiredWorkers = x.RequiredWorkers,
-                Deadline = x.Deadline,
+                Deadline = x.StartTime,
                 Status = x.Status.ToString()
             })
             .ToList();

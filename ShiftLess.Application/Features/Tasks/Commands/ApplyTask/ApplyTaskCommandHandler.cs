@@ -33,7 +33,7 @@ public class ApplyTaskCommandHandler
                 request.TaskId,
                 request.WorkerId);
 
-        if (DateTime.UtcNow > task.ApplicationDeadline)
+        if (DateTime.UtcNow > task.StartTime)
             throw new Exception("Applications are closed.");
 
         if (existingApplication is not null)

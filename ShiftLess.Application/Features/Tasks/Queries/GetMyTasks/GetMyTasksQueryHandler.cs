@@ -31,7 +31,7 @@ public class GetMyTasksQueryHandler
                 Title = x.TaskRequest.Title,
                 Description = x.TaskRequest.Description,
                 Budget = x.TaskRequest.Budget,
-                Deadline = x.TaskRequest.Deadline
+                Deadline = x.TaskRequest.StartTime
             })
             .ToList();
     }
