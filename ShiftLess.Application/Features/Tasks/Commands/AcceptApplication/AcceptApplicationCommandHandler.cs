@@ -27,11 +27,12 @@ public class AcceptApplicationCommandHandler
         if (task is null)
             throw new Exception("Task not found");
 
-        if (task.ShopkeeperId != request.ShopkeeperId)
-            throw new UnauthorizedAccessException(
-                "You do not own this task.");
-
         var application =
+    await _taskRepository.GetApplicationByIdAsync(request.ApplicationId);
+
+        if (application is null)
+            throw new Exception("Application not found");
+
             await _taskRepository.GetApplicationByIdAsync(
                 request.ApplicationId);
 

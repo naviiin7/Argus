@@ -24,9 +24,12 @@ public class DeleteTaskCommandHandler
         if (task is null)
             throw new Exception("Task not found.");
 
-        if (task.ShopkeeperId != request.ManagerId)
+        if (request.Role != "Admin" &&
+    task.ShopkeeperId != request.ManagerId)
+        {
             throw new UnauthorizedAccessException(
                 "You do not own this task.");
+        }
 
         await _taskRepository.DeleteApplicationsForTaskAsync(task.Id);
 

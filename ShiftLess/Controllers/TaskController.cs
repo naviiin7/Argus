@@ -5,7 +5,7 @@ using ShiftLess.Application.Features.Tasks.Commands.AcceptApplication;
 using ShiftLess.Application.Features.Tasks.Commands.ApplyTask;
 using ShiftLess.Application.Features.Tasks.Commands.CompleteTask;
 using ShiftLess.Application.Features.Tasks.Commands.CreateTask;
-using ShiftLess.Application.Features.Tasks.Commands.DeleteTask; 
+using ShiftLess.Application.Features.Tasks.Commands.DeleteTask;
 using ShiftLess.Application.Features.Tasks.Commands.LeaveTask;
 using ShiftLess.Application.Features.Tasks.Commands.RejectApplication;
 using ShiftLess.Application.Features.Tasks.DTOs;
@@ -37,10 +37,7 @@ public class TasksController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetOpenTasks()
     {
-        var result =
-            await _mediator.Send(
-                new GetOpenTasksQuery());
-
+        var result = await _mediator.Send(new GetOpenTasksQuery());
         return Ok(result);
     }
 
@@ -48,9 +45,7 @@ public class TasksController : ControllerBase
     [HttpGet("my-tasks")]
     public async Task<IActionResult> GetMyTasks()
     {
-        var workerId = int.Parse(
-            User.FindFirstValue(
-                ClaimTypes.NameIdentifier)!);
+        var workerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var result =
             await _mediator.Send(
@@ -67,15 +62,11 @@ public class TasksController : ControllerBase
     [HttpPost("{id}/apply")]
     public async Task<IActionResult> Apply(int id)
     {
-        var workerId = int.Parse(
-            User.FindFirstValue(
-                ClaimTypes.NameIdentifier)!);
+        var workerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var result =
             await _mediator.Send(
-                new ApplyTaskCommand(
-                    id,
-                    workerId));
+                new ApplyTaskCommand(id, workerId));
 
         return Ok(result);
     }
@@ -86,18 +77,13 @@ public class TasksController : ControllerBase
 
     [Authorize(Roles = "Manager,Admin")]
     [HttpPost]
-    public async Task<IActionResult> CreateTask(
-        CreateTaskRequest request)
+    public async Task<IActionResult> CreateTask(CreateTaskRequest request)
     {
-        var managerId = int.Parse(
-            User.FindFirstValue(
-                ClaimTypes.NameIdentifier)!);
+        var managerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var result =
             await _mediator.Send(
-                new CreateTaskCommand(
-                    managerId,
-                    request));
+                new CreateTaskCommand(managerId, request));
 
         return Ok(result);
     }
@@ -106,32 +92,31 @@ public class TasksController : ControllerBase
     [HttpGet("created")]
     public async Task<IActionResult> GetMyCreatedTasks()
     {
-        var managerId = int.Parse(
-            User.FindFirstValue(
-                ClaimTypes.NameIdentifier)!);
+        var managerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var result =
             await _mediator.Send(
-                new GetMyCreatedTasksQuery(
-                    managerId));
+                new GetMyCreatedTasksQuery(managerId));
 
         return Ok(result);
     }
 
     [Authorize(Roles = "Manager,Admin")]
     [HttpGet("{id}/details")]
-    public async Task<IActionResult> GetTaskDetails(
-        int id)
+    public async Task<IActionResult> GetTaskDetails(int id)
     {
-        var managerId = int.Parse(
-            User.FindFirstValue(
-                ClaimTypes.NameIdentifier)!);
+        var managerId =
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var role =
+            User.FindFirstValue(ClaimTypes.Role)!;
 
         var result =
             await _mediator.Send(
                 new GetTaskDetailsQuery(
                     id,
-                    managerId));
+                    managerId,
+                    role));
 
         return Ok(result);
     }
@@ -142,8 +127,7 @@ public class TasksController : ControllerBase
 
     [Authorize(Roles = "Manager,Admin")]
     [HttpGet("{id}/applicants")]
-    public async Task<IActionResult> GetApplicants(
-        int id)
+    public async Task<IActionResult> GetApplicants(int id)
     {
         var result =
             await _mediator.Send(
@@ -155,19 +139,22 @@ public class TasksController : ControllerBase
     [Authorize(Roles = "Manager,Admin")]
     [HttpPost("{taskId}/applications/{applicationId}/accept")]
     public async Task<IActionResult> AcceptApplication(
-        int taskId,
-        int applicationId)
+    int taskId,
+    int applicationId)
     {
-        var shopkeeperId = int.Parse(
-            User.FindFirstValue(
-                ClaimTypes.NameIdentifier)!);
+        var managerId =
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var role =
+            User.FindFirstValue(ClaimTypes.Role)!;
 
         var result =
             await _mediator.Send(
                 new AcceptApplicationCommand(
                     taskId,
                     applicationId,
-                    shopkeeperId));
+                    managerId,
+                    role));
 
         return Ok(result);
     }
@@ -175,23 +162,25 @@ public class TasksController : ControllerBase
     [Authorize(Roles = "Manager,Admin")]
     [HttpPost("{taskId}/applications/{applicationId}/reject")]
     public async Task<IActionResult> RejectApplication(
-        int taskId,
-        int applicationId)
+    int taskId,
+    int applicationId)
     {
-        var shopkeeperId = int.Parse(
-            User.FindFirstValue(
-                ClaimTypes.NameIdentifier)!);
+        var managerId =
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var role =
+            User.FindFirstValue(ClaimTypes.Role)!;
 
         var result =
             await _mediator.Send(
                 new RejectApplicationCommand(
                     taskId,
                     applicationId,
-                    shopkeeperId));
+                    managerId,
+                    role));
 
         return Ok(result);
     }
-
 
     [Authorize(Roles = "Manager,Admin")]
     [HttpPut("{id}")]
@@ -199,15 +188,18 @@ public class TasksController : ControllerBase
     int id,
     UpdateTaskRequest request)
     {
-        var managerId = int.Parse(
-            User.FindFirstValue(
-                ClaimTypes.NameIdentifier)!);
+        var managerId =
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var role =
+            User.FindFirstValue(ClaimTypes.Role)!;
 
         var result =
             await _mediator.Send(
                 new UpdateTaskCommand(
                     id,
                     managerId,
+                    role,
                     request));
 
         return Ok(result);
@@ -217,11 +209,12 @@ public class TasksController : ControllerBase
     [HttpPost("{taskId}/leave")]
     public async Task<IActionResult> LeaveTask(int taskId)
     {
-        var workerId = int.Parse(
-            User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var workerId =
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        var result = await _mediator.Send(
-            new LeaveTaskCommand(taskId, workerId));
+        var result =
+            await _mediator.Send(
+                new LeaveTaskCommand(taskId, workerId));
 
         return Ok(result);
     }
@@ -230,13 +223,18 @@ public class TasksController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(int id)
     {
-        var managerId = int.Parse(
-            User.FindFirstValue(
-                ClaimTypes.NameIdentifier)!);
+        var managerId =
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var role =
+            User.FindFirstValue(ClaimTypes.Role)!;
 
         var result =
             await _mediator.Send(
-                new DeleteTaskCommand(id, managerId));
+                new DeleteTaskCommand(
+                    id,
+                    managerId,
+                    role));
 
         return Ok(result);
     }
@@ -245,11 +243,18 @@ public class TasksController : ControllerBase
     [HttpPost("{id}/complete")]
     public async Task<IActionResult> CompleteTask(int id)
     {
-        var managerId = int.Parse(
-            User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var managerId =
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        var result = await _mediator.Send(
-            new CompleteTaskCommand(id, managerId));
+        var role =
+            User.FindFirstValue(ClaimTypes.Role)!;
+
+        var result =
+            await _mediator.Send(
+                new CompleteTaskCommand(
+                    id,
+                    managerId,
+                    role));
 
         return Ok(result);
     }
@@ -258,11 +263,9 @@ public class TasksController : ControllerBase
     // FUTURE ENDPOINTS
     // =====================================================
 
-
-
     // SignalR Chat
-    // GET    /api/tasks/{taskId}/chat
+    // GET /api/tasks/{taskId}/chat
 
     // Task Members
-    // GET    /api/tasks/{taskId}/members
+    // GET /api/tasks/{taskId}/members
 }

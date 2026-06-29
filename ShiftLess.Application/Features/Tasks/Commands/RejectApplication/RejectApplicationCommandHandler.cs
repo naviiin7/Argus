@@ -25,6 +25,11 @@ public class RejectApplicationCommandHandler
             await _taskRepository.GetApplicationByIdAsync(
                 request.ApplicationId);
 
+    await _taskRepository.GetApplicationByIdAsync(request.ApplicationId);
+
+        if (application is null)
+            throw new Exception("Application not found");
+
         if (application is null)
             throw new Exception("Application not found");
 

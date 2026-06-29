@@ -5,5 +5,6 @@ namespace ShiftLess.Application.Features.Tasks.Commands.RejectApplication;
 public record RejectApplicationCommand(
     int TaskId,
     int ApplicationId,
-    int ShopkeeperId)
+    int ShopkeeperId,
+    string Role)
     : IRequest<RejectApplicationResponse>;

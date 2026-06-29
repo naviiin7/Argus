@@ -1,17 +1,17 @@
-using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ShiftLess.Application.Assembly;
 using ShiftLess.Infrastructure;
 using ShiftLess.Persistence;
+using ShiftLess.Persistence.Seed;
 using System.Text;
 
 namespace ShiftLess;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -118,6 +118,7 @@ public class Program
         // =========================================
 
         var app = builder.Build();
+        await DbSeeder.SeedAsync(app.Services);
 
         // =========================================
         // MIDDLEWARE PIPELINE

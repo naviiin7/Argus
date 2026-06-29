@@ -23,8 +23,12 @@ public class GetTaskDetailsQueryHandler
         if (task is null)
             throw new Exception("Task not found.");
 
-        if (task.ShopkeeperId != request.ManagerId)
-            throw new UnauthorizedAccessException("You do not own this task.");
+        if (request.Role != "Admin" &&
+    task.ShopkeeperId != request.ManagerId)
+        {
+            throw new UnauthorizedAccessException(
+                "You do not own this task.");
+        }
 
         var applications =
             await _taskRepository.GetApplicationsByTaskIdAsync(task.Id);

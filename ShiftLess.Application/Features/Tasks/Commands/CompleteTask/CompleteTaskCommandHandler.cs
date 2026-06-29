@@ -25,9 +25,12 @@ public class CompleteTaskCommandHandler
         if (task == null)
             throw new Exception("Task not found.");
 
-        if (task.ShopkeeperId != request.ManagerId)
+        if (request.Role != "Admin" &&
+    task.ShopkeeperId != request.ManagerId)
+        {
             throw new UnauthorizedAccessException(
                 "You do not own this task.");
+        }
 
         if (task.Status != TaskStatus.InProgress)
             throw new Exception(
