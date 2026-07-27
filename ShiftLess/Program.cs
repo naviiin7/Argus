@@ -2,10 +2,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ShiftLess.Application.Assembly;
+using ShiftLess.Application;
 using ShiftLess.Infrastructure;
 using ShiftLess.Persistence;
 using ShiftLess.Persistence.Seed;
 using System.Text;
+
+using ShiftLessAPI.Middleware;
 
 namespace ShiftLess;
 
@@ -25,19 +28,25 @@ public class Program
         // =========================================
         // APPLICATION LAYER
         // =========================================
-
-        builder.Services.AddMediatR(cfg =>
-        {
-            cfg.RegisterServicesFromAssembly(
-                typeof(ApplicationAssemblyMarker).Assembly);
-        });
+        builder.Services.AddApplication();
 
         // =========================================
         // INFRASTRUCTURE + PERSISTENCE
         // =========================================
 
         builder.Services.AddInfrastructure(builder.Configuration);
+
         builder.Services.AddPersistence(builder.Configuration);
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("Angular", policy =>
+            {
+                policy
+                    .WithOrigins("http://localhost:4200")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
 
         // =========================================
         // AUTHENTICATION
@@ -118,6 +127,11 @@ public class Program
         // =========================================
 
         var app = builder.Build();
+
+
+        app.UseMiddleware<GlobalExceptionMiddleware>();
+
+
         await DbSeeder.SeedAsync(app.Services);
 
         // =========================================
@@ -131,6 +145,8 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+
+        app.UseCors("Angular");
 
         app.UseAuthentication();
         app.UseAuthorization();

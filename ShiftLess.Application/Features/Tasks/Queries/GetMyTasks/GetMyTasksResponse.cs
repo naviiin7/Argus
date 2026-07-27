@@ -12,6 +12,10 @@ public class GetMyTasksResponse
 
     public string Description { get; set; } = string.Empty;
 
+    public int RequiredWorkers { get; set; }
+
+    public string Status { get; set; } = string.Empty; 
+
     public decimal Budget { get; set; }
 
     public DateTime Deadline { get; set; }

@@ -17,6 +17,8 @@ public class TaskRequest
 
     public decimal Budget { get; set; }
 
+    public int WorkingHours { get; set; }
+
     public int RequiredWorkers { get; set; }
 
     // Scheduled start time

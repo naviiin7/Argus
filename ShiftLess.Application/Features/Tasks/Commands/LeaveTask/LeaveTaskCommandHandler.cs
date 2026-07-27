@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using ShiftLess.Application.Interfaces;
 using ShiftLess.Domain.Enums;
-
+using ShiftLess.Application.Common.Exceptions;
 namespace ShiftLess.Application.Features.Tasks.Commands.LeaveTask;
 
 public class LeaveTaskCommandHandler
@@ -25,17 +25,21 @@ public class LeaveTaskCommandHandler
                 request.WorkerId);
 
         if (application is null)
-            throw new Exception(
+            throw new BadRequestException(
                 "You are not assigned to this task.");
 
         var task = application.TaskRequest;
+
+        if (task.Status == Domain.Enums.TaskStatus.Completed)
+            throw new BadRequestException(
+                "Completed tasks cannot be left.");
 
         var leaveDeadline =
             task.StartTime.AddHours(-task.LeaveNoticeHours);
 
         if (DateTime.UtcNow > leaveDeadline)
-            throw new Exception(
-                $"Workers must leave at least {task.LeaveNoticeHours} hours before the task deadline.");
+            throw new BadRequestException(
+                $"Workers must leave at least {task.LeaveNoticeHours} hours before the task starts.");
 
         application.Status = ApplicationStatus.Withdrawn;
 
@@ -44,7 +48,9 @@ public class LeaveTaskCommandHandler
             .Count(x => x.Status == ApplicationStatus.Accepted);
 
         if (acceptedWorkers < task.RequiredWorkers)
-            task.Status =Domain.Enums.TaskStatus.Open;
+        {
+            task.Status = Domain.Enums.TaskStatus.Open;
+        }
 
         await _taskRepository.SaveChangesAsync();
 

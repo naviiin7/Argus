@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using ShiftLess.Application.Interfaces;
-
+using ShiftLess.Application.Common.Exceptions;
 namespace ShiftLess.Application.Features.Tasks.Commands.DeleteTask;
 
 public class DeleteTaskCommandHandler
@@ -22,12 +22,13 @@ public class DeleteTaskCommandHandler
             await _taskRepository.GetByIdAsync(request.Id);
 
         if (task is null)
-            throw new Exception("Task not found.");
+            throw new NotFoundException(
+                "Task not found.");
 
         if (request.Role != "Admin" &&
-    task.ShopkeeperId != request.ManagerId)
+            task.ShopkeeperId != request.ManagerId)
         {
-            throw new UnauthorizedAccessException(
+            throw new ForbiddenException(
                 "You do not own this task.");
         }
 

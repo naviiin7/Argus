@@ -10,6 +10,8 @@ public class UpdateTaskRequest
 
     public decimal Budget { get; set; }
 
+    public int WorkingHours { get; set; }
+
     public int RequiredWorkers { get; set; }
 
     public DateTime StartTime { get; set; }

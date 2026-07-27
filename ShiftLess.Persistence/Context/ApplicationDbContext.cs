@@ -35,6 +35,12 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(x => x.WorkerId)
             .OnDelete(DeleteBehavior.NoAction);
 
+        modelBuilder.Entity<TaskApplication>()
+    .HasKey(x => x.TaskApplicationId);
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(x => x.Token)
+            .IsUnique();
 
     }
 
@@ -45,4 +51,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<TaskApplication> TaskApplications => Set<TaskApplication>();
 
     public DbSet<Assignment> Assignments => Set<Assignment>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 }

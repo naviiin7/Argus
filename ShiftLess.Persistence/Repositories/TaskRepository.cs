@@ -24,7 +24,6 @@ public class TaskRepository : ITaskRepository
     {
         var task = await _context.TaskRequests
             .FirstOrDefaultAsync(x => x.Id == id);
-
         if (task != null)
         {
             UpdateTaskStatus(task);
@@ -41,7 +40,7 @@ public class TaskRepository : ITaskRepository
 
     public async Task<List<TaskApplication>> GetApplicantsAsync(int taskId)
     {
-        var task = await GetByIdAsync(taskId);
+        await GetByIdAsync(taskId);
 
         return await _context.TaskApplications
             .Include(x => x.Worker)
@@ -49,7 +48,7 @@ public class TaskRepository : ITaskRepository
             .ToListAsync();
     }
 
-    public async Task<List<TaskRequest>> GetOpenTasksAsync()
+    public async Task<List<TaskRequest>> GetOpenTasksAsync(int workerId)
     {
         var tasks = await _context.TaskRequests.ToListAsync();
 
@@ -60,10 +59,21 @@ public class TaskRepository : ITaskRepository
 
         await _context.SaveChangesAsync();
 
-        return tasks
-            .Where(x => x.Status == ShiftLess.Domain.Enums.TaskStatus.Open ||
-                        x.Status == ShiftLess.Domain.Enums.TaskStatus.Full)
-            .ToList();
+        // Public listing now includes Full tasks too (shown as "Assigned"
+        // with a fill count on the frontend) instead of hiding them the
+        // moment they're fully staffed.
+        return await _context.TaskRequests
+            .Where(t =>
+                t.Status == ShiftLess.Domain.Enums.TaskStatus.Open ||
+                t.Status == ShiftLess.Domain.Enums.TaskStatus.Full)
+            .Where(t =>
+                !_context.TaskApplications.Any(a =>
+                    a.TaskRequestId == t.Id &&
+                    a.WorkerId == workerId &&
+                    a.Status != ApplicationStatus.Rejected &&
+                    a.Status != ApplicationStatus.Withdrawn))
+            .OrderBy(t => t.StartTime)
+            .ToListAsync();
     }
 
     public async Task<TaskApplication?> GetApplicationByIdAsync(
@@ -71,7 +81,7 @@ public class TaskRepository : ITaskRepository
     {
         return await _context.TaskApplications
             .Include(x => x.TaskRequest)
-            .FirstOrDefaultAsync(x => x.Id == applicationId);
+            .FirstOrDefaultAsync(x => x.TaskApplicationId == applicationId);
     }
 
     public async Task<List<TaskApplication>> GetAcceptedTasksAsync(

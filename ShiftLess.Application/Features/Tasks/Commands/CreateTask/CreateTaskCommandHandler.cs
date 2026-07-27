@@ -31,6 +31,8 @@ public class CreateTaskCommandHandler
 
             StartTime = request.Request.StartTime,
 
+            WorkingHours = request.Request.WorkingHours,
+
             LeaveNoticeHours = request.Request.LeaveNoticeHours,
 
             Status = ShiftLess.Domain.Enums.TaskStatus.Open

@@ -22,6 +22,8 @@ public static class DependencyInjection
 
         services.AddScoped<ITaskRepository, TaskRepository>();
 
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
         return services;
     }
 }

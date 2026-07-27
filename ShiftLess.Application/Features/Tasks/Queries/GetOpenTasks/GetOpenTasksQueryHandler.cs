@@ -18,17 +18,31 @@ public class GetOpenTasksQueryHandler
         GetOpenTasksQuery request,
         CancellationToken cancellationToken)
     {
-        var tasks =
-            await _taskRepository.GetOpenTasksAsync();
+        var tasks = await _taskRepository.GetOpenTasksAsync(request.WorkerId);
 
-        return tasks.Select(x => new GetOpenTasksResponse
+        if (tasks == null)
+            return [];
+
+        var responses = new List<GetOpenTasksResponse>();
+
+        foreach (var task in tasks)
         {
-            Id = x.Id,
-            Title = x.Title,
-            Description = x.Description,
-            Budget = x.Budget,
-            RequiredWorkers = x.RequiredWorkers,
-            Deadline = x.StartTime
-        }).ToList();
+            var acceptedCount =
+                await _taskRepository.GetAcceptedWorkerCountAsync(task.Id);
+
+            responses.Add(new GetOpenTasksResponse
+            {
+                TaskId = task.Id,
+                Title = task.Title,
+                Description = task.Description,
+                Budget = task.Budget,
+                RequiredWorkers = task.RequiredWorkers,
+                AcceptedWorkers = acceptedCount,
+                Deadline = task.StartTime,
+                Status = task.Status.ToString()
+            });
+        }
+
+        return responses;
     }
 }

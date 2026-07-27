@@ -15,7 +15,6 @@ public static class DependencyInjection
             configuration.GetSection("Jwt"));
 
         services.AddScoped<IPasswordHasher, PasswordHasher>();
-
         services.AddScoped<IJwtService, JwtService>();
 
         return services;

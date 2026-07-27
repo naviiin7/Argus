@@ -4,9 +4,7 @@ using ShiftLess.Application.Interfaces;
 namespace ShiftLess.Application.Features.Tasks.Queries.GetMyTasks;
 
 public class GetMyTasksQueryHandler
-    : IRequestHandler<
-        GetMyTasksQuery,
-        List<GetMyTasksResponse>>
+    : IRequestHandler<GetMyTasksQuery, List<GetMyTasksResponse>>
 {
     private readonly ITaskRepository _taskRepository;
 
@@ -21,18 +19,20 @@ public class GetMyTasksQueryHandler
         CancellationToken cancellationToken)
     {
         var applications =
-            await _taskRepository.GetAcceptedTasksAsync(
-                request.WorkerId);
+            await _taskRepository.GetAcceptedTasksAsync(request.WorkerId);
 
-        return applications
-            .Select(x => new GetMyTasksResponse
-            {
-                TaskId = x.TaskRequest.Id,
-                Title = x.TaskRequest.Title,
-                Description = x.TaskRequest.Description,
-                Budget = x.TaskRequest.Budget,
-                Deadline = x.TaskRequest.StartTime
-            })
-            .ToList();
+        if (applications == null)
+            return [];
+
+        return applications.Select(application => new GetMyTasksResponse
+        {
+            TaskId = application.TaskRequest.Id,
+            Title = application.TaskRequest.Title,
+            Description = application.TaskRequest.Description,
+            Budget = application.TaskRequest.Budget,
+            RequiredWorkers = application.TaskRequest.RequiredWorkers,
+            Deadline = application.TaskRequest.StartTime,
+            Status = application.TaskRequest.Status.ToString()
+        }).ToList();
     }
 }

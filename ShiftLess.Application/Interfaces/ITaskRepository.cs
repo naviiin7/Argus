@@ -14,7 +14,7 @@ public interface ITaskRepository
 
     Task<TaskApplication?> GetExistingApplicationAsync(    int taskId,    int workerId);
 
-    Task<List<TaskRequest>> GetOpenTasksAsync();
+    Task<List<TaskRequest>> GetOpenTasksAsync(int workerId);
 
     Task<List<TaskApplication>> GetApplicantsAsync(int taskId);
 

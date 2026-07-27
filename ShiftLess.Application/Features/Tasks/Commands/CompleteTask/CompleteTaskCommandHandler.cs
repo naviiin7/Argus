@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using ShiftLess.Application.Interfaces;
 using ShiftLess.Domain.Enums;
-using TaskStatus = ShiftLess.Domain.Enums.TaskStatus;
+using ShiftLess.Application.Common.Exceptions;
 namespace ShiftLess.Application.Features.Tasks.Commands.CompleteTask;
 
 public class CompleteTaskCommandHandler
@@ -22,21 +22,30 @@ public class CompleteTaskCommandHandler
         var task =
             await _taskRepository.GetByIdAsync(request.TaskId);
 
-        if (task == null)
-            throw new Exception("Task not found.");
+        if (task is null)
+            throw new NotFoundException(
+                "Task not found.");
 
         if (request.Role != "Admin" &&
-    task.ShopkeeperId != request.ManagerId)
+            task.ShopkeeperId != request.ManagerId)
         {
-            throw new UnauthorizedAccessException(
+            throw new ForbiddenException(
                 "You do not own this task.");
         }
 
-        if (task.Status != TaskStatus.InProgress)
-            throw new Exception(
+        if (task.Status != ShiftLess.Domain.Enums.TaskStatus.InProgress)
+            throw new BadRequestException(
                 "Only tasks that are in progress can be completed.");
 
-        task.Status = TaskStatus.Completed;
+        var endTime = task.StartTime.AddHours(task.WorkingHours);
+
+        if (DateTime.UtcNow < endTime)
+            throw new BadRequestException(
+                $"This task's working hours don't end until " +
+                $"{endTime:yyyy-MM-dd HH:mm} UTC. It can only be marked " +
+                "complete after that time.");
+
+        task.Status = ShiftLess.Domain.Enums.TaskStatus.Completed;
 
         await _taskRepository.SaveChangesAsync();
 

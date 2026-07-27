@@ -7,7 +7,7 @@ namespace ShiftLess.Domain.Entities
 {
     public class TaskApplication
     {
-        public int Id { get; set; }
+        public int TaskApplicationId { get; set; }
 
         public int TaskRequestId { get; set; }
 
@@ -20,6 +20,5 @@ namespace ShiftLess.Domain.Entities
         public DateTime AppliedAt { get; set; }
 
         public ApplicationStatus Status { get; set; }
-
     }
 }

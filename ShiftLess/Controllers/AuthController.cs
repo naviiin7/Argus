@@ -1,8 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ShiftLess.Application.Features.Auth.Commands.Register;
 using ShiftLess.Application.Features.Auth.Commands.Login;
+using ShiftLess.Application.Features.Auth.Commands.Register;
 using ShiftLess.Application.Features.Auth.DTOs;
+using ShiftLessAPI.Extensions;
 
 namespace ShiftLessAPI.Controllers;
 
@@ -17,23 +18,37 @@ public class AuthController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Registers a new user.
+    /// </summary>
     [HttpPost("register")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
         var result = await _mediator.Send(
             new RegisterCommand(request));
 
-        return Ok(result);
+        return this.ApiOk(
+            result,
+            "Registration successful.");
     }
 
+    /// <summary>
+    /// Authenticates a user and returns a JWT token.
+    /// </summary>
     [HttpPost("login")]
-    public async Task<IActionResult> Login(
-    LoginRequest request)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Login(LoginRequest request)
     {
         var result = await _mediator.Send(
             new LoginCommand(request));
 
-        return Ok(result);
+        return this.ApiOk(
+            result,
+            "Login successful.");
     }
-
 }
