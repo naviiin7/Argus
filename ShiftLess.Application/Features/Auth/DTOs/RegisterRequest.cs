@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using ShiftLess.Domain.Enums;
+﻿using ShiftLess.Domain.Enums;
 
 namespace ShiftLess.Application.Features.Auth.DTOs;
 
@@ -18,6 +14,5 @@ public class RegisterRequest
 
     public bool IsBusinessOwner { get; set; }
 
-
-
+    public string OtpCode { get; set; } = string.Empty;
 }

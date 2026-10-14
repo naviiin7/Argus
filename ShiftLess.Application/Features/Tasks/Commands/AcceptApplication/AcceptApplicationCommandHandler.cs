@@ -3,23 +3,20 @@ using ShiftLess.Application.Interfaces;
 using ShiftLess.Domain.Enums;
 using ShiftLess.Application.Common.Exceptions;
 
-
-
 namespace ShiftLess.Application.Features.Tasks.Commands.AcceptApplication;
 
-
-
 public class AcceptApplicationCommandHandler
-    : IRequestHandler<
-        AcceptApplicationCommand,
-        AcceptApplicationResponse>
+    : IRequestHandler<AcceptApplicationCommand, AcceptApplicationResponse>
 {
     private readonly ITaskRepository _taskRepository;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
     public AcceptApplicationCommandHandler(
-        ITaskRepository taskRepository)
+        ITaskRepository taskRepository,
+        IRealtimeNotifier realtimeNotifier)
     {
         _taskRepository = taskRepository;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     public async Task<AcceptApplicationResponse> Handle(
@@ -58,10 +55,6 @@ public class AcceptApplicationCommandHandler
                 "Only pending applications can be accepted.");
         }
 
-        if (application.Status == ApplicationStatus.Accepted)
-            throw new ConflictException(
-                "Application is already accepted.");
-
         if (DateTime.UtcNow >= task.StartTime)
             throw new BadRequestException(
                 "This task has already started.");
@@ -83,6 +76,11 @@ public class AcceptApplicationCommandHandler
         }
 
         await _taskRepository.SaveChangesAsync();
+
+        await _realtimeNotifier.NotifyUserAsync(
+            application.WorkerId,
+            "ApplicationAccepted",
+            new { taskId = task.Id, taskTitle = task.Title });
 
         return new AcceptApplicationResponse
         {

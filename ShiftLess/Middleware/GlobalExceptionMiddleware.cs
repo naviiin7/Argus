@@ -6,6 +6,11 @@ namespace ShiftLessAPI.Middleware;
 
 public class GlobalExceptionMiddleware
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
@@ -68,6 +73,12 @@ public class GlobalExceptionMiddleware
 
                 break;
 
+            case ConflictException:
+
+                response.StatusCode = StatusCodes.Status409Conflict;
+
+                break;
+
             case BadRequestException:
 
                 response.StatusCode = StatusCodes.Status400BadRequest;
@@ -86,6 +97,6 @@ public class GlobalExceptionMiddleware
         context.Response.StatusCode = response.StatusCode;
 
         await context.Response.WriteAsync(
-            JsonSerializer.Serialize(response));
+            JsonSerializer.Serialize(response, JsonOptions));
     }
 }

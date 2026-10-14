@@ -12,6 +12,8 @@ public interface IUserRepository
 
     Task<User?> GetByIdAsync(int id);
 
+    Task<List<User>> GetAllUsersAsync();
+
     Task AddAsync(User user);
 
     Task SaveChangesAsync();

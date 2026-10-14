@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
       <PrivateAssets>all</PrivateAssets>
@@ -21,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ShiftLess.Application\ShiftLess.Application.csproj" />
+    <ProjectReference Include="..\ShiftLess.Domain\ShiftLess.Domain.csproj" />
     <ProjectReference Include="..\ShiftLess.Infrastructure\ShiftLess.Infrastructure.csproj" />
     <ProjectReference Include="..\ShiftLess.Persistence\ShiftLess.Persistence.csproj" />
   </ItemGroup>

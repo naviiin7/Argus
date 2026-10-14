@@ -40,10 +40,6 @@ public class UpdateTaskCommandHandler
         var acceptedCount =
             await _taskRepository.GetAcceptedWorkerCountAsync(task.Id);
 
-        // Prevent shrinking capacity below what's already committed.
-        // This is what was producing the "3/1 accepted" display —
-        // nothing stopped a manager from dropping RequiredWorkers
-        // below the number of workers already accepted.
         if (request.Request.RequiredWorkers < acceptedCount)
         {
             throw new BadRequestException(
@@ -56,6 +52,9 @@ public class UpdateTaskCommandHandler
 
         task.Description =
             request.Request.Description;
+
+        task.Location =
+            request.Request.Location;
 
         task.Budget =
             request.Request.Budget;

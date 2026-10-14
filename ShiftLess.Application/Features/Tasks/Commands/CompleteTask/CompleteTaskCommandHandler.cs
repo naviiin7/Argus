@@ -8,11 +8,14 @@ public class CompleteTaskCommandHandler
     : IRequestHandler<CompleteTaskCommand, CompleteTaskResponse>
 {
     private readonly ITaskRepository _taskRepository;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
     public CompleteTaskCommandHandler(
-        ITaskRepository taskRepository)
+        ITaskRepository taskRepository,
+        IRealtimeNotifier realtimeNotifier)
     {
         _taskRepository = taskRepository;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     public async Task<CompleteTaskResponse> Handle(
@@ -48,6 +51,17 @@ public class CompleteTaskCommandHandler
         task.Status = ShiftLess.Domain.Enums.TaskStatus.Completed;
 
         await _taskRepository.SaveChangesAsync();
+
+        var applications =
+            await _taskRepository.GetApplicationsByTaskIdAsync(task.Id);
+
+        foreach (var app in applications.Where(a => a.Status == ApplicationStatus.Accepted))
+        {
+            await _realtimeNotifier.NotifyUserAsync(
+                app.WorkerId,
+                "TaskCompleted",
+                new { taskId = task.Id, taskTitle = task.Title });
+        }
 
         return new CompleteTaskResponse
         {

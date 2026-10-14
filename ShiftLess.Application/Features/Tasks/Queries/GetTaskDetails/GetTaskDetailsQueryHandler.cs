@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using ShiftLess.Application.Common.Exceptions;
 using ShiftLess.Application.Interfaces;
+using ShiftLess.Domain.Entities;
 
 namespace ShiftLess.Application.Features.Tasks.Queries.GetTaskDetails;
 
@@ -8,11 +9,14 @@ public class GetTaskDetailsQueryHandler
     : IRequestHandler<GetTaskDetailsQuery, GetTaskDetailsResponse>
 {
     private readonly ITaskRepository _taskRepository;
+    private readonly IPaymentRepository _paymentRepository;
 
     public GetTaskDetailsQueryHandler(
-        ITaskRepository taskRepository)
+        ITaskRepository taskRepository,
+        IPaymentRepository paymentRepository)
     {
         _taskRepository = taskRepository;
+        _paymentRepository = paymentRepository;
     }
 
     public async Task<GetTaskDetailsResponse> Handle(
@@ -35,6 +39,9 @@ public class GetTaskDetailsQueryHandler
         var acceptedCount =
             await _taskRepository.GetAcceptedWorkerCountAsync(task.Id);
 
+        var payment =
+            await _paymentRepository.GetByTaskIdAsync(task.Id);
+
         var endTime = task.StartTime.AddHours(task.WorkingHours);
 
         var canComplete =
@@ -46,6 +53,7 @@ public class GetTaskDetailsQueryHandler
             TaskId = task.Id,
             Title = task.Title,
             Description = task.Description,
+            Location = task.Location,
             Budget = task.Budget,
             RequiredWorkers = task.RequiredWorkers,
             AcceptedWorkers = acceptedCount,
@@ -54,7 +62,8 @@ public class GetTaskDetailsQueryHandler
             EndTime = endTime,
             LeaveNoticeHours = task.LeaveNoticeHours,
             Status = task.Status.ToString(),
-            CanComplete = canComplete
+            CanComplete = canComplete,
+            IsPaid = payment?.Status == PaymentStatus.Paid
         };
     }
 }

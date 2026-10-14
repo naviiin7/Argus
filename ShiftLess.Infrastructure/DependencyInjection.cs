@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using ShiftLess.Application.Interfaces;
 using ShiftLess.Infrastructure.Authentication;
+using ShiftLess.Infrastructure.Payments;
 
 namespace ShiftLess.Infrastructure;
 
@@ -16,6 +17,11 @@ public static class DependencyInjection
 
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();
+
+        services.Configure<RazorpaySettings>(
+    configuration.GetSection("Razorpay"));
+
+        services.AddHttpClient<IPaymentGateway, RazorpayGateway>();
 
         return services;
     }

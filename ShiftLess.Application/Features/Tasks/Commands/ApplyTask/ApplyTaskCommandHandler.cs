@@ -11,11 +11,14 @@ public class ApplyTaskCommandHandler
     : IRequestHandler<ApplyTaskCommand, ApplyTaskResponse>
 {
     private readonly ITaskRepository _taskRepository;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
     public ApplyTaskCommandHandler(
-        ITaskRepository taskRepository)
+        ITaskRepository taskRepository,
+        IRealtimeNotifier realtimeNotifier)
     {
         _taskRepository = taskRepository;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     public async Task<ApplyTaskResponse> Handle(
@@ -47,9 +50,6 @@ public class ApplyTaskCommandHandler
 
         if (existingApplication is not null)
         {
-            // A worker can re-apply if their previous application ended
-            // in Rejected OR Withdrawn (left the task themselves). Only
-            // Pending/Accepted should block a fresh application.
             var canReapply =
                 existingApplication.Status == ApplicationStatus.Rejected ||
                 existingApplication.Status == ApplicationStatus.Withdrawn;
@@ -67,6 +67,11 @@ public class ApplyTaskCommandHandler
                 DateTime.UtcNow;
 
             await _taskRepository.SaveChangesAsync();
+
+            await _realtimeNotifier.NotifyUserAsync(
+                task.ShopkeeperId,
+                "NewApplicant",
+                new { taskId = task.Id, taskTitle = task.Title });
 
             return new ApplyTaskResponse
             {
@@ -86,6 +91,11 @@ public class ApplyTaskCommandHandler
         await _taskRepository.AddApplicationAsync(application);
 
         await _taskRepository.SaveChangesAsync();
+
+        await _realtimeNotifier.NotifyUserAsync(
+            task.ShopkeeperId,
+            "NewApplicant",
+            new { taskId = task.Id, taskTitle = task.Title });
 
         return new ApplyTaskResponse
         {

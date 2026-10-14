@@ -210,6 +210,19 @@ public class TaskRepository : ITaskRepository
                 x.WorkerId == workerId);
     }
 
+    public async Task<List<TaskRequest>> GetAllTasksAsync()
+    {
+        var tasks = await _context.TaskRequests.ToListAsync();
+
+        foreach (var task in tasks)
+        {
+            UpdateTaskStatus(task);
+        }
+
+        await _context.SaveChangesAsync();
+
+        return tasks;
+    }
 
     public async Task SaveChangesAsync()
     {

@@ -26,6 +26,7 @@ public class CreateTaskCommandHandler
             ShopkeeperId = request.ShopkeeperId,
             Title = request.Request.Title,
             Description = request.Request.Description,
+            Location = request.Request.Location,
             Budget = request.Request.Budget,
             RequiredWorkers = request.Request.RequiredWorkers,
 

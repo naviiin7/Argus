@@ -35,6 +35,7 @@ public class GetOpenTasksQueryHandler
                 TaskId = task.Id,
                 Title = task.Title,
                 Description = task.Description,
+                Location = task.Location,
                 Budget = task.Budget,
                 RequiredWorkers = task.RequiredWorkers,
                 AcceptedWorkers = acceptedCount,

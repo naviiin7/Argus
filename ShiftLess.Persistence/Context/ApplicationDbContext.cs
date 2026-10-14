@@ -29,6 +29,10 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(x => x.TaskRequestId)
             .OnDelete(DeleteBehavior.NoAction);
 
+        modelBuilder.Entity<Payment>()
+    .Property(p => p.Amount)
+    .HasPrecision(18, 2);
+
         modelBuilder.Entity<TaskApplication>()
             .HasOne(x => x.Worker)
             .WithMany()
@@ -53,4 +57,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<Assignment> Assignments => Set<Assignment>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<ChatMessage> ChatMessages { get; set; } = null!;
+
+    public DbSet<OtpCode> OtpCodes { get; set; } = null!;
+
+    public DbSet<Payment> Payments { get; set; } = null!;
+
 }

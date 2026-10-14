@@ -8,11 +8,14 @@ public class LeaveTaskCommandHandler
     : IRequestHandler<LeaveTaskCommand, LeaveTaskResponse>
 {
     private readonly ITaskRepository _taskRepository;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
     public LeaveTaskCommandHandler(
-        ITaskRepository taskRepository)
+        ITaskRepository taskRepository,
+        IRealtimeNotifier realtimeNotifier)
     {
         _taskRepository = taskRepository;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     public async Task<LeaveTaskResponse> Handle(
@@ -53,6 +56,11 @@ public class LeaveTaskCommandHandler
         }
 
         await _taskRepository.SaveChangesAsync();
+
+        await _realtimeNotifier.NotifyUserAsync(
+            task.ShopkeeperId,
+            "WorkerLeft",
+            new { taskId = task.Id, taskTitle = task.Title });
 
         return new LeaveTaskResponse
         {

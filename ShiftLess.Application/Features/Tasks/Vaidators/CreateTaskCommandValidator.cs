@@ -15,6 +15,11 @@ public class CreateTaskCommandValidator
             .NotEmpty()
             .MaximumLength(1000);
 
+        RuleFor(x => x.Request.Location)
+            .NotEmpty()
+            .MaximumLength(100)
+            .WithMessage("Enter where this task takes place.");
+
         RuleFor(x => x.Request.Budget)
             .GreaterThan(0);
 
