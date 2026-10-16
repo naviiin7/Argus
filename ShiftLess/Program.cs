@@ -225,6 +225,8 @@ public class Program
 
         app.MapHub<ChatHub>("/hubs/chat");
 
+
+
         app.Run();
     }
 }
