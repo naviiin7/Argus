@@ -28,6 +28,27 @@ public class ChatRepository : IChatRepository
             .ToListAsync();
     }
 
+    public async Task<List<ChatMessage>> GetLastMessagesByTaskIdsAsync(
+        IReadOnlyCollection<int> taskIds)
+    {
+        if (taskIds.Count == 0)
+            return new List<ChatMessage>();
+
+        var ids = taskIds.ToList();
+
+        // Ids are identity values, so the highest id per task is its latest message.
+        var latestIds = await _context.ChatMessages
+            .Where(m => ids.Contains(m.TaskRequestId))
+            .GroupBy(m => m.TaskRequestId)
+            .Select(g => g.Max(m => m.Id))
+            .ToListAsync();
+
+        return await _context.ChatMessages
+            .Include(m => m.Sender)
+            .Where(m => latestIds.Contains(m.Id))
+            .ToListAsync();
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();

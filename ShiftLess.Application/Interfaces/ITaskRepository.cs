@@ -32,6 +32,8 @@ public interface ITaskRepository
 
     Task<int> GetAcceptedWorkerCountAsync(int taskId);
 
+    Task<List<int>> GetAcceptedWorkerIdsAsync(int taskId);
+
     Task DeleteTaskAsync(TaskRequest task);
 
     Task DeleteApplicationsForTaskAsync(int taskId);

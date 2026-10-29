@@ -163,6 +163,16 @@ public class TaskRepository : ITaskRepository
                 x.Status == ApplicationStatus.Accepted);
     }
 
+    public async Task<List<int>> GetAcceptedWorkerIdsAsync(int taskId)
+    {
+        return await _context.TaskApplications
+            .Where(x =>
+                x.TaskRequestId == taskId &&
+                x.Status == ApplicationStatus.Accepted)
+            .Select(x => x.WorkerId)
+            .ToListAsync();
+    }
+
     public Task DeleteTaskAsync(TaskRequest task)
     {
         _context.TaskRequests.Remove(task);

@@ -86,13 +86,21 @@ public class Program
         // =========================================
         // CORS
         // =========================================
+        // Production runs same-origin behind the reverse proxy, so CORS is
+        // not actually exercised there. Origins come from configuration
+        // (Cors:Origins:0, Cors:Origins:1, ...); the default keeps
+        // `ng serve` on localhost:4200 working for local development.
+
+        var corsOrigins =
+            builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+            ?? new[] { "http://localhost:4200" };
 
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("Angular", policy =>
             {
                 policy
-                    .WithOrigins("http://localhost:4200")
+                    .WithOrigins(corsOrigins)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
@@ -106,6 +114,12 @@ public class Program
         var jwtKey = builder.Configuration["Jwt:Key"];
         var jwtIssuer = builder.Configuration["Jwt:Issuer"];
         var jwtAudience = builder.Configuration["Jwt:Audience"];
+
+        if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
+        {
+            throw new InvalidOperationException(
+                "Jwt:Key must be configured and at least 32 characters long.");
+        }
 
         builder.Services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -121,7 +135,7 @@ public class Program
 
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtKey!)),
+                        Encoding.UTF8.GetBytes(jwtKey)),
 
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
@@ -214,7 +228,8 @@ public class Program
             app.UseSwaggerUI();
         }
 
-        app.UseHttpsRedirection();
+        // No UseHttpsRedirection(): TLS is terminated by Caddy, and the
+        // container only listens on plain HTTP inside the Docker network.
 
         app.UseCors("Angular");
 
@@ -224,8 +239,6 @@ public class Program
         app.MapControllers();
 
         app.MapHub<ChatHub>("/hubs/chat");
-
-
 
         app.Run();
     }

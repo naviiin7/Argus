@@ -62,9 +62,45 @@ public class SendMessageCommandHandler
             SentAt = message.SentAt
         };
 
+        // Live update for anyone who has this task's chat open.
         await _realtimeNotifier.SendChatMessageAsync(task.Id, response);
 
+        // Toast / browser notification for everyone else in the chat,
+        // even when they don't have it open.
+        await NotifyOtherParticipantsAsync(task.Id, task.Title, task.ShopkeeperId, response);
+
         return response;
+    }
+
+    private async Task NotifyOtherParticipantsAsync(
+        int taskId,
+        string taskTitle,
+        int shopkeeperId,
+        ChatMessageResponse message)
+    {
+        // A task can have several accepted workers, so notify all of them
+        // plus the manager.
+        var recipients = new HashSet<int> { shopkeeperId };
+
+        foreach (var workerId in await _taskRepository.GetAcceptedWorkerIdsAsync(taskId))
+            recipients.Add(workerId);
+
+        // Never notify the person who just sent the message.
+        recipients.Remove(message.SenderId);
+
+        foreach (var recipientId in recipients)
+        {
+            await _realtimeNotifier.NotifyUserAsync(
+                recipientId,
+                "ChatMessage",
+                new
+                {
+                    taskId,
+                    taskTitle,
+                    senderName = message.SenderName,
+                    text = message.Message
+                });
+        }
     }
 
     private async Task EnsureParticipant(
