@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using ShiftLess.Application.Features.Auth.Otp;
 
 namespace ShiftLess.Application.Features.Auth.Validators;
 
@@ -8,23 +9,23 @@ public class RegisterCommandValidator
     public RegisterCommandValidator()
     {
         RuleFor(x => x.Request.FullName)
-            .NotEmpty()
-            .MaximumLength(100);
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty().WithMessage("Full name is required.")
+            .MaximumLength(100).WithMessage("Full name must be 100 characters or fewer.");
 
         RuleFor(x => x.Request.Email)
-            .NotEmpty()
-            .EmailAddress();
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty().WithMessage("Email is required.")
+            .Must(e => EmailNormalizer.IsValid(EmailNormalizer.Normalize(e)))
+            .WithMessage("Enter a valid email address.");
 
         RuleFor(x => x.Request.Phone)
-            .NotEmpty()
-            .Matches(@"^\d{10}$")
-            .WithMessage("Phone number must contain exactly 10 digits.");
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty().WithMessage("Phone number is required.")
+            .Matches(@"^\+?\d{10,15}$")
+            .WithMessage("Phone number must be 10 to 15 digits, optionally starting with +.");
 
         RuleFor(x => x.Request.Password)
-            .NotEmpty()
-            .MinimumLength(8)
-            .Matches("[A-Z]").WithMessage("Must contain one uppercase letter.")
-            .Matches("[a-z]").WithMessage("Must contain one lowercase letter.")
-            .Matches("[0-9]").WithMessage("Must contain one number.");
+            .MustBeStrongPassword();
     }
 }

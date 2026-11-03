@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShiftLess.Application.Features.Auth.Commands.Login;
 using ShiftLess.Application.Features.Auth.Commands.Register;
 using ShiftLess.Application.Features.Auth.Commands.RefreshToken;
+using ShiftLess.Application.Features.Auth.Commands.ResetPassword;
 using ShiftLess.Application.Features.Auth.Commands.SendOtp;
 using ShiftLess.Application.Features.Auth.Commands.VerifyOtp;
 using ShiftLess.Application.Features.Auth.DTOs;
@@ -52,6 +53,37 @@ public class AuthController : ControllerBase
             request.Email, OtpPurpose.Registration, request.OtpCode, Consume: true));
 
         return this.ApiOk(result, "Registration successful.");
+    }
+
+    [HttpPost("forgot-password/send-otp")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SendPasswordResetOtp(SendOtpRequest request)
+    {
+        var result = await _mediator.Send(
+            new SendOtpCommand(request.Email, OtpPurpose.PasswordReset));
+
+        return this.ApiOk(
+            result,
+            "If an account exists for this email, a reset code has been sent.");
+    }
+
+    [HttpPost("forgot-password/reset")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+    {
+        // Same pattern as registration: check the code without burning it,
+        // so a weak new password doesn't waste the emailed code.
+        await _mediator.Send(new VerifyOtpCommand(
+            request.Email, OtpPurpose.PasswordReset, request.OtpCode, Consume: false));
+
+        var result = await _mediator.Send(new ResetPasswordCommand(request));
+
+        await _mediator.Send(new VerifyOtpCommand(
+            request.Email, OtpPurpose.PasswordReset, request.OtpCode, Consume: true));
+
+        return this.ApiOk(result, "Password reset successful.");
     }
 
     [HttpPost("login")]

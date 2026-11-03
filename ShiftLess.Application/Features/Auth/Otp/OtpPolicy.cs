@@ -7,6 +7,8 @@ namespace ShiftLess.Application.Features.Auth.Otp;
 public static class OtpPurpose
 {
     public const string Registration = "Registration";
+
+    public const string PasswordReset = "PasswordReset";
 }
 
 public static class OtpPolicy

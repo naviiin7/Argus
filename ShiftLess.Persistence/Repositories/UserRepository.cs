@@ -16,8 +16,12 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByEmailAsync(string email)
     {
+        // PostgreSQL compares text case-sensitively (SQL Server did not),
+        // so compare lower-cased on both sides.
+        var normalized = (email ?? string.Empty).Trim().ToLowerInvariant();
+
         return await _context.Users
-            .FirstOrDefaultAsync(x => x.Email == email);
+            .FirstOrDefaultAsync(x => x.Email.ToLower() == normalized);
     }
 
     public async Task<User?> GetByIdAsync(int id)

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using ShiftLess.Application.Features.Auth.Otp;
 using ShiftLess.Application.Features.Auth.Responses;
 using ShiftLess.Application.Interfaces;
 using RefreshTokenEntity = ShiftLess.Domain.Entities.RefreshToken;
@@ -29,9 +30,9 @@ public class LoginCommandHandler
         LoginCommand request,
         CancellationToken cancellationToken)
     {
-        var user =
-            await _userRepository.GetByEmailAsync(
-                request.Request.Email);
+        var email = EmailNormalizer.Normalize(request.Request.Email);
+
+        var user = await _userRepository.GetByEmailAsync(email);
 
         if (user is null)
             throw new UnauthorizedAccessException(
@@ -46,11 +47,13 @@ public class LoginCommandHandler
             throw new UnauthorizedAccessException(
                 "Invalid email or password.");
 
-        var token =
-            _jwtService.GenerateToken(user);
+        if (!user.IsActive)
+            throw new UnauthorizedAccessException(
+                "This account has been deactivated. Please contact support.");
 
-        var refreshTokenValue =
-            _jwtService.GenerateRefreshToken();
+        var token = _jwtService.GenerateToken(user);
+
+        var refreshTokenValue = _jwtService.GenerateRefreshToken();
 
         var refreshToken = new RefreshTokenEntity
         {

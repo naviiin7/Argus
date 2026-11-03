@@ -36,13 +36,22 @@ public class SendOtpCommandHandler
         if (!EmailNormalizer.IsValid(email))
             throw new BadRequestException("Enter a valid email address.");
 
-        if (request.Purpose == OtpPurpose.Registration)
-        {
-            var existingUser = await _userRepository.GetByEmailAsync(email);
+        if (request.Purpose != OtpPurpose.Registration &&
+            request.Purpose != OtpPurpose.PasswordReset)
+            throw new BadRequestException("Unsupported verification purpose.");
 
-            if (existingUser is not null)
-                throw new ConflictException(
-                    "An account with this email already exists. Try logging in instead.");
+        var existingUser = await _userRepository.GetByEmailAsync(email);
+
+        if (request.Purpose == OtpPurpose.Registration && existingUser is not null)
+            throw new ConflictException(
+                "An account with this email already exists. Try logging in instead.");
+
+        // Password reset: reply exactly the same whether or not the account
+        // exists, so this endpoint can't be used to discover registered emails.
+        if (request.Purpose == OtpPurpose.PasswordReset &&
+            (existingUser is null || !existingUser.IsActive))
+        {
+            return BuildResponse(null);
         }
 
         var latest = await _otpRepository.GetLatestAsync(email, request.Purpose);
@@ -70,16 +79,7 @@ public class SendOtpCommandHandler
             ExpiresAt = DateTime.UtcNow.AddMinutes(OtpPolicy.ExpiryMinutes)
         });
 
-        var subject = "Your ShiftLess verification code";
-
-        var body =
-            "<div style='font-family:Arial,sans-serif;max-width:420px'>" +
-            "<h2 style='margin:0 0 12px'>Verify your email</h2>" +
-            "<p>Use this code to finish creating your ShiftLess account:</p>" +
-            $"<p style='font-size:32px;font-weight:700;letter-spacing:6px;margin:16px 0'>{code}</p>" +
-            $"<p style='color:#666'>It expires in {OtpPolicy.ExpiryMinutes} minutes. " +
-            "If you didn't request this, you can ignore this email.</p>" +
-            "</div>";
+        var (subject, body) = BuildEmail(request.Purpose, code);
 
         // Send BEFORE saving: if delivery fails, nothing is persisted, so the
         // user isn't locked behind the resend cooldown for an email that
@@ -88,11 +88,42 @@ public class SendOtpCommandHandler
 
         await _otpRepository.SaveChangesAsync();
 
+        return BuildResponse(_otpService.ExposeDebugCode ? code : null);
+    }
+
+    private static SendOtpResponse BuildResponse(string? debugCode)
+    {
         return new SendOtpResponse
         {
             ExpiresInSeconds = OtpPolicy.ExpiryMinutes * 60,
             ResendAfterSeconds = OtpPolicy.ResendCooldownSeconds,
-            DebugCode = _otpService.ExposeDebugCode ? code : null
+            DebugCode = debugCode
         };
+    }
+
+    private static (string Subject, string Body) BuildEmail(string purpose, string code)
+    {
+        var isReset = purpose == OtpPurpose.PasswordReset;
+
+        var subject = isReset
+            ? "Reset your ShiftLess password"
+            : "Your ShiftLess verification code";
+
+        var heading = isReset ? "Reset your password" : "Verify your email";
+
+        var intro = isReset
+            ? "Use this code to reset your ShiftLess password:"
+            : "Use this code to finish creating your ShiftLess account:";
+
+        var body =
+            "<div style='font-family:Arial,sans-serif;max-width:420px'>" +
+            $"<h2 style='margin:0 0 12px'>{heading}</h2>" +
+            $"<p>{intro}</p>" +
+            $"<p style='font-size:32px;font-weight:700;letter-spacing:6px;margin:16px 0'>{code}</p>" +
+            $"<p style='color:#666'>It expires in {OtpPolicy.ExpiryMinutes} minutes. " +
+            "If you didn't request this, you can ignore this email.</p>" +
+            "</div>";
+
+        return (subject, body);
     }
 }

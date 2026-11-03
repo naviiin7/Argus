@@ -8,5 +8,8 @@ public interface IRefreshTokenRepository
 
     Task<RefreshToken?> GetByTokenAsync(string token);
 
+    /// <summary>Signs a user out everywhere by revoking all of their active refresh tokens.</summary>
+    Task RevokeAllForUserAsync(int userId);
+
     Task SaveChangesAsync();
 }

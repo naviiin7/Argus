@@ -36,7 +36,7 @@ public class RefreshTokenCommandHandler
         var user =
             await _userRepository.GetByIdAsync(existing.UserId);
 
-        if (user is null)
+        if (user is null || !user.IsActive)
             throw new UnauthorizedAccessException(
                 "Invalid refresh token.");
 

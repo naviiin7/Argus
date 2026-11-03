@@ -1,9 +1,11 @@
 ﻿using MediatR;
+using ShiftLess.Application.Common.Exceptions;
+using ShiftLess.Application.Features.Auth.Otp;
 using ShiftLess.Application.Features.Auth.Responses;
 using ShiftLess.Application.Interfaces;
 using ShiftLess.Domain.Entities;
 using ShiftLess.Domain.Enums;
-using ShiftLess.Application.Common.Exceptions;
+
 namespace ShiftLess.Application.Features.Auth.Commands.Register;
 
 public class RegisterCommandHandler
@@ -24,22 +26,21 @@ public class RegisterCommandHandler
         RegisterCommand request,
         CancellationToken cancellationToken)
     {
-        var existingUser =
-            await _userRepository.GetByEmailAsync(
-                request.Request.Email);
+        // Same normalization the OTP step uses, so "Name@Mail.com " and
+        // "name@mail.com" are the same account.
+        var email = EmailNormalizer.Normalize(request.Request.Email);
+
+        var existingUser = await _userRepository.GetByEmailAsync(email);
 
         if (existingUser is not null)
-            throw new ConflictException(
-                "Email already exists.");
+            throw new ConflictException("Email already exists.");
 
         var user = new User
         {
-            FullName = request.Request.FullName,
-            Email = request.Request.Email,
-            Phone = request.Request.Phone,
-            PasswordHash =
-                _passwordHasher.Hash(
-                    request.Request.Password),
+            FullName = request.Request.FullName.Trim(),
+            Email = email,
+            Phone = request.Request.Phone.Trim(),
+            PasswordHash = _passwordHasher.Hash(request.Request.Password),
 
             Role = request.Request.IsBusinessOwner
                 ? UserRole.Manager
