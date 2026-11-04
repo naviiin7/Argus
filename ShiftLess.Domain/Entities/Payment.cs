@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using ShiftLess.Domain.Enums;
 
 namespace ShiftLess.Domain.Entities;
-
-public enum PaymentStatus
-{
-    Pending = 0,
-    Paid = 1,
-    Failed = 2
-}
 
 public class Payment
 {

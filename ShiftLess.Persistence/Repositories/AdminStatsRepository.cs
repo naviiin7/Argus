@@ -3,6 +3,7 @@ using ShiftLess.Application.Features.Admin.Queries.GetAdminStats;
 using ShiftLess.Application.Interfaces;
 using ShiftLess.Domain.Entities;
 using ShiftLess.Domain.Enums;
+using PaymentStatusEnum = ShiftLess.Domain.Enums.PaymentStatus;
 using ShiftLess.Persistence.Context;
 using TaskStatus = ShiftLess.Domain.Enums.TaskStatus;
 
@@ -51,11 +52,13 @@ public class AdminStatsRepository : IAdminStatsRepository
         // ---------- chat + payments ----------
         var messages = await _context.ChatMessages.CountAsync();
 
-        var paid = _context.Payments.Where(p => p.Status == PaymentStatus.Paid);
+        var paid = _context.Payments
+    .Where(p => p.Status == PaymentStatus.Paid);
 
         var paidCount = await paid.CountAsync();
 
-        var paidAmount = await paid.SumAsync(p => (decimal?)p.Amount) ?? 0m;
+        var paidAmount = await paid
+            .SumAsync(p => (decimal?)p.Amount) ?? 0m;
 
         return new AdminStatsResponse
         {
