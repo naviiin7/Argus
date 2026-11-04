@@ -14,17 +14,24 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(
-        configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(
+                configuration.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<IUserRepository, UserRepository>();
+
         services.AddScoped<ITaskRepository, TaskRepository>();
+
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         // Chat, OTP and payment repositories
         services.AddScoped<IChatRepository, ChatRepository>();
+
         services.AddScoped<IOtpRepository, OtpRepository>();
+
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+
+        // Admin statistics
+        services.AddScoped<IAdminStatsRepository, AdminStatsRepository>();
 
         return services;
     }

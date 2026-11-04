@@ -14,6 +14,7 @@ using ShiftLess.Persistence.Repositories;
 using ShiftLess.Persistence.Seed;
 using ShiftLessAPI.Hubs;
 using ShiftLessAPI.Middleware;
+using System.Security.Claims;
 using System.Text;
 
 namespace ShiftLess;
@@ -86,14 +87,26 @@ public class Program
         // =========================================
         // CORS
         // =========================================
-        // Production runs same-origin behind the reverse proxy, so CORS is
-        // not actually exercised there. Origins come from configuration
-        // (Cors:Origins:0, Cors:Origins:1, ...); the default keeps
-        // `ng serve` on localhost:4200 working for local development.
+        // Origins come from configuration (Cors__Origins__0, Cors__Origins__1, ...).
+        // A single comma-separated Cors__Origins value also works. Trailing
+        // slashes are ignored. The fallback keeps local development working.
 
-        var corsOrigins =
-            builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
-            ?? new[] { "http://localhost:4200" };
+        var corsOrigins = builder.Configuration
+            .GetSection("Cors:Origins")
+            .Get<string[]>();
+
+        if (corsOrigins is null || corsOrigins.Length == 0)
+        {
+            var single = builder.Configuration["Cors:Origins"];
+
+            corsOrigins = !string.IsNullOrWhiteSpace(single)
+                ? single.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                : new[] { "http://localhost:4200" };
+        }
+
+        corsOrigins = corsOrigins
+            .Select(o => o.Trim().TrimEnd('/'))
+            .ToArray();
 
         builder.Services.AddCors(options =>
         {
@@ -141,10 +154,10 @@ public class Program
                     ClockSkew = TimeSpan.Zero
                 };
 
-                // Browsers can't set headers on a WebSocket handshake, so
-                // SignalR sends the JWT as a query-string parameter instead.
                 options.Events = new JwtBearerEvents
                 {
+                    // Browsers can't set headers on a WebSocket handshake, so
+                    // SignalR sends the JWT as a query-string parameter instead.
                     OnMessageReceived = context =>
                     {
                         var accessToken = context.Request.Query["access_token"];
@@ -158,6 +171,32 @@ public class Program
                         }
 
                         return Task.CompletedTask;
+                    },
+
+                    // A valid token is not enough: the account must still
+                    // exist and not be blocked. This makes an admin block (or
+                    // delete) take effect immediately instead of when the
+                    // token expires.
+                    OnTokenValidated = async context =>
+                    {
+                        var idClaim = context.Principal?
+                            .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                        if (!int.TryParse(idClaim, out var userId))
+                        {
+                            context.Fail("Invalid token.");
+                            return;
+                        }
+
+                        var users = context.HttpContext.RequestServices
+                            .GetRequiredService<IUserRepository>();
+
+                        var user = await users.GetByIdAsync(userId);
+
+                        if (user is null || !user.IsActive)
+                        {
+                            context.Fail("This account is disabled.");
+                        }
                     }
                 };
             });
@@ -228,8 +267,8 @@ public class Program
             app.UseSwaggerUI();
         }
 
-        // No UseHttpsRedirection(): TLS is terminated by Caddy, and the
-        // container only listens on plain HTTP inside the Docker network.
+        // No UseHttpsRedirection(): TLS is terminated by the host (Render),
+        // and the container only listens on plain HTTP.
 
         app.UseCors("Angular");
 

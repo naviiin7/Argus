@@ -19,12 +19,21 @@ public class GetAllUsersQueryHandler
     {
         var users = await _userRepository.GetAllUsersAsync();
 
-        return users.Select(u => new GetAllUsersResponse
-        {
-            UserId = u.Id,
-            FullName = u.FullName,
-            Email = u.Email,
-            Role = u.Role.ToString()
-        }).ToList();
+        var withActivity = await _userRepository.GetUserIdsWithActivityAsync();
+
+        return users
+            .OrderBy(u => u.Role)
+            .ThenBy(u => u.FullName)
+            .Select(u => new GetAllUsersResponse
+            {
+                UserId = u.Id,
+                FullName = u.FullName,
+                Email = u.Email,
+                Phone = u.Phone,
+                Role = u.Role.ToString(),
+                IsActive = u.IsActive,
+                HasActivity = withActivity.Contains(u.Id)
+            })
+            .ToList();
     }
 }
