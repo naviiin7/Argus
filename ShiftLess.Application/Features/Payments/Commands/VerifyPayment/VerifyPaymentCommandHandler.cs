@@ -2,6 +2,7 @@
 using ShiftLess.Application.Common.Exceptions;
 using ShiftLess.Application.Interfaces;
 using ShiftLess.Domain.Entities;
+using ShiftLess.Domain.Enums;
 
 namespace ShiftLess.Application.Features.Payments.Commands.VerifyPayment;
 
@@ -34,7 +35,10 @@ public class VerifyPaymentCommandHandler
 
         if (request.Role != "Admin" &&
             payment.TaskRequest.ShopkeeperId != request.ManagerId)
-            throw new ForbiddenException("You do not own this task.");
+        {
+            throw new ForbiddenException(
+                "You do not own this task.");
+        }
 
         var isValid = _paymentGateway.VerifySignature(
             request.Request.RazorpayOrderId,
@@ -44,6 +48,7 @@ public class VerifyPaymentCommandHandler
         if (!isValid)
         {
             payment.Status = PaymentStatus.Failed;
+
             await _paymentRepository.SaveChangesAsync();
 
             throw new BadRequestException(

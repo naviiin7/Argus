@@ -2,6 +2,7 @@
 using ShiftLess.Application.Common.Exceptions;
 using ShiftLess.Application.Interfaces;
 using ShiftLess.Domain.Entities;
+using ShiftLess.Domain.Enums;
 
 namespace ShiftLess.Application.Features.Payments.Commands.PayTask;
 
@@ -38,12 +39,19 @@ public class PayTaskCommandHandler
         }
 
         if (task.Status != ShiftLess.Domain.Enums.TaskStatus.Completed)
-            throw new BadRequestException("Only completed tasks can be paid.");
+        {
+            throw new BadRequestException(
+                "Only completed tasks can be paid.");
+        }
 
         var existing = await _paymentRepository.GetByTaskIdAsync(task.Id);
 
-        if (existing is not null && existing.Status == PaymentStatus.Paid)
-            throw new BadRequestException("This task has already been paid.");
+        if (existing is not null &&
+            existing.Status == PaymentStatus.Paid)
+        {
+            throw new BadRequestException(
+                "This task has already been paid.");
+        }
 
         var charge = await _processor.ChargeAsync(
             new CardChargeRequest
@@ -57,26 +65,39 @@ public class PayTaskCommandHandler
             },
             cancellationToken);
 
-        // Reuses the existing Payment table. The gateway-specific column names
-        // (RazorpayOrderId/RazorpayPaymentId) simply hold the mock references.
+        // Reuses the existing Payment table.
+        // Gateway-specific columns hold the mock references.
+
         var payment = new Payment
         {
             TaskRequestId = task.Id,
             RazorpayOrderId = $"mock_order_{Guid.NewGuid():N}",
+
             RazorpayPaymentId = string.IsNullOrEmpty(charge.TransactionId)
                 ? null
                 : charge.TransactionId,
+
             Amount = task.Budget,
-            Status = charge.Success ? PaymentStatus.Paid : PaymentStatus.Failed,
-            PaidAt = charge.Success ? DateTime.UtcNow : null
+
+            Status = charge.Success
+                ? PaymentStatus.Paid
+                : PaymentStatus.Failed,
+
+            PaidAt = charge.Success
+                ? DateTime.UtcNow
+                : null
         };
 
         await _paymentRepository.AddAsync(payment);
         await _paymentRepository.SaveChangesAsync();
 
-        // Failed attempts are recorded first, then reported to the caller.
+        // Record failed attempts before reporting failure.
+
         if (!charge.Success)
-            throw new BadRequestException(charge.FailureReason ?? "Payment failed.");
+        {
+            throw new BadRequestException(
+                charge.FailureReason ?? "Payment failed.");
+        }
 
         return new PayTaskResponse
         {

@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using ShiftLess.Application.Common.Exceptions;
 using ShiftLess.Application.Interfaces;
-using ShiftLess.Domain.Entities;
+using ShiftLess.Domain.Enums;
 
 namespace ShiftLess.Application.Features.Tasks.Queries.GetTaskDetails;
 
@@ -23,8 +23,7 @@ public class GetTaskDetailsQueryHandler
         GetTaskDetailsQuery request,
         CancellationToken cancellationToken)
     {
-        var task =
-            await _taskRepository.GetByIdAsync(request.TaskId);
+        var task = await _taskRepository.GetByIdAsync(request.TaskId);
 
         if (task is null)
             throw new NotFoundException("Task not found.");

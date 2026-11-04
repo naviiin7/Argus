@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using ShiftLess.Application.Common.Exceptions;
 using ShiftLess.Application.Interfaces;
+using ShiftLess.Domain.Entities;
+using ShiftLess.Domain.Enums;
 
 namespace ShiftLess.Application.Features.Payments.Commands.CreateOrder;
 
@@ -30,28 +32,37 @@ public class CreateOrderCommandHandler
         if (task is null)
             throw new NotFoundException("Task not found.");
 
-        if (request.Role != "Admin" && task.ShopkeeperId != request.ManagerId)
+        if (request.Role != "Admin" &&
+            task.ShopkeeperId != request.ManagerId)
+        {
             throw new ForbiddenException("You do not own this task.");
+        }
 
         if (task.Status != ShiftLess.Domain.Enums.TaskStatus.Completed)
+        {
             throw new BadRequestException(
                 "Only completed tasks can be paid out.");
+        }
 
         var existing = await _paymentRepository.GetByTaskIdAsync(task.Id);
 
-        if (existing is not null && existing.Status == Domain.Entities.PaymentStatus.Paid)
-            throw new BadRequestException("This task has already been paid.");
+        if (existing is not null &&
+            existing.Status == PaymentStatus.Paid)
+        {
+            throw new BadRequestException(
+                "This task has already been paid.");
+        }
 
         var order = await _paymentGateway.CreateOrderAsync(
             task.Budget,
             receipt: $"task-{task.Id}");
 
-        var payment = new Domain.Entities.Payment
+        var payment = new Payment
         {
             TaskRequestId = task.Id,
             RazorpayOrderId = order.OrderId,
             Amount = task.Budget,
-            Status = Domain.Entities.PaymentStatus.Pending
+            Status = PaymentStatus.Pending
         };
 
         await _paymentRepository.AddAsync(payment);
