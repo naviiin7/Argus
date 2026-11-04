@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using ShiftLess.Application.Features.Admin.Commands.UpdateUser;
 using ShiftLess.Application.Features.Admin.Commands.UpdateUsers;
 
 namespace ShiftLess.Application.Features.Admin.Validators;

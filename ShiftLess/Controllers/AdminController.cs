@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShiftLess.Application.Features.Admin.Commands.DeleteUser;
 using ShiftLess.Application.Features.Admin.Commands.SetUserActive;
-using ShiftLess.Application.Features.Admin.Commands.UpdateUser;
+using ShiftLess.Application.Features.Admin.Commands.UpdateUsers;
 using ShiftLess.Application.Features.Admin.DTOs;
 using ShiftLess.Application.Features.Admin.Queries.GetAdminStats;
 using ShiftLess.Application.Features.Admin.Queries.GetAllTasks;
