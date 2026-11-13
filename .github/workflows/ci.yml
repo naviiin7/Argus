@@ -38,39 +38,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.actor }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build (and push on main)
@@ -82,19 +50,7 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/shiftless-api:latest
             ghcr.io/${{ github.repository_owner }}/shiftless-api:${{ github.sha }}
-          cac
-
-
-
-
-
-
-
-
-
-
-
-he-from: type=gha
+          cache-from: type=gha
           cache-to: type=gha,mode=max
 
   deploy:
@@ -102,13 +58,5 @@ he-from: type=gha
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-
-
-
-
-
-
-
-
-      - name: Trigger Render deploy
+    - name: Trigger Render deploy
         run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
