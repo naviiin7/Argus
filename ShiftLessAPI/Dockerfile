@@ -1,29 +1,30 @@
-# ---- Build stage ----
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-WORKDIR /src
+# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-# Copy only the .csproj files first so the restore layer is cached
-# and skipped on later builds unless a project file changes.
-COPY ShiftLess/*.csproj ShiftLess/
-COPY ShiftLess.Application/*.csproj ShiftLess.Application/
-COPY ShiftLess.Domain/*.csproj ShiftLess.Domain/
-COPY ShiftLess.Infrastructure/*.csproj ShiftLess.Infrastructure/
-COPY ShiftLess.Persistence/*.csproj ShiftLess.Persistence/
-
-RUN dotnet restore ShiftLess/*.csproj
-
-COPY . .
-WORKDIR /src/ShiftLess
-RUN dotnet publish -c Release -o /app/publish -p:UseAppHost=false
-
-# ---- Runtime stage ----
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+# This stage is used when running from VS in fast mode (Default for Debug configuration)
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+USER $APP_UID
 WORKDIR /app
-COPY --from=build /app/publish .
-
-ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
+EXPOSE 8081
 
-USER app
 
-ENTRYPOINT ["dotnet", "ShiftLessAPI.dll"]
+# This stage is used to build the service project
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["ShiftLess/ShiftLess.csproj", "ShiftLess/"]
+RUN dotnet restore "./ShiftLess/ShiftLess.csproj"
+COPY . .
+WORKDIR "/src/ShiftLess"
+RUN dotnet build "./ShiftLess.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# This stage is used to publish the service project to be copied to the final stage
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./ShiftLess.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "ShiftLess.dll"]

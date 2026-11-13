@@ -3,5 +3,5 @@
   <Project Path="ShiftLess.Domain/ShiftLess.Domain.csproj" />
   <Project Path="ShiftLess.Infrastructure/ShiftLess.Infrastructure.csproj" />
   <Project Path="ShiftLess.Persistence/ShiftLess.Persistence.csproj" />
-  <Project Path="ShiftLess/ShiftLessAPI.csproj" />
+  <Project Path="ShiftLessAPI/ShiftLessAPI.csproj" />
 </Solution>

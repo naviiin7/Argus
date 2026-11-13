@@ -1,6 +1,0 @@
-@ShiftLess_HostAddress = http://localhost:5056
-
-GET {{ShiftLess_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

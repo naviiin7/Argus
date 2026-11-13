@@ -4,16 +4,16 @@ WORKDIR /src
 
 # Copy only the .csproj files first so the restore layer is cached
 # and skipped on later builds unless a project file changes.
-COPY ShiftLess/*.csproj ShiftLess/
+COPY ShiftLessAPI/*.csproj ShiftLessAPI/
 COPY ShiftLess.Application/*.csproj ShiftLess.Application/
 COPY ShiftLess.Domain/*.csproj ShiftLess.Domain/
 COPY ShiftLess.Infrastructure/*.csproj ShiftLess.Infrastructure/
 COPY ShiftLess.Persistence/*.csproj ShiftLess.Persistence/
 
-RUN dotnet restore ShiftLess/*.csproj
+RUN dotnet restore ShiftLessAPI/*.csproj
 
 COPY . .
-WORKDIR /src/ShiftLess
+WORKDIR /src/ShiftLessAPI
 RUN dotnet publish -c Release -o /app/publish -p:UseAppHost=false
 
 # ---- Runtime stage ----
