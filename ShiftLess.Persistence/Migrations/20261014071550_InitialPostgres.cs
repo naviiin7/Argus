@@ -7,11 +7,12 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ShiftLess.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialPostgres : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+
             migrationBuilder.CreateTable(
                 name: "Assignments",
                 columns: table => new
@@ -150,7 +151,7 @@ namespace ShiftLess.Persistence.Migrations
                     TaskRequestId = table.Column<int>(type: "integer", nullable: false),
                     RazorpayOrderId = table.Column<string>(type: "text", nullable: false),
                     RazorpayPaymentId = table.Column<string>(type: "text", nullable: true),
-                    Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     PaidAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
